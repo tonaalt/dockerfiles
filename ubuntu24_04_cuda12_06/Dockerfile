@@ -34,3 +34,4 @@ USER root
 EXPOSE 22
 EXPOSE 8888
 RUN echo "export PATH=/home/user/.local/:$PATH" >> /home/user/.bashrc
+CMD ["/bin/bash","-c", "/usr/sbin/sshd -D"]
