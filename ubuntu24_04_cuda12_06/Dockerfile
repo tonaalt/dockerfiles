@@ -2,14 +2,22 @@ FROM nvidia/cuda:12.6.0-devel-ubuntu24.04
 LABEL maintainer="toni.aaltonen@samk.fi"
 RUN apt-get update && apt-get upgrade -y
 RUN apt install  openssh-server sudo -y
-RUN apt install -y zip htop screen libgl1-mesa-glx python3-pip
-RUN useradd -rm -d /home/user -s /bin/bash -g root -G sudo -u 1000 user 
+RUN apt install -y zip htop screen python3-pip
+RUN apt-get install -y --no-install-recommends python3-venv 
+RUN olduser="$(getent passwd 1000 | cut -d: -f1)" \
+ && usermod -l user -d /home/user -m "$olduser"
 RUN  echo 'user:user' | chpasswd
 RUN service ssh start
 USER user
 WORKDIR /home/user
-RUN pip33 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-RUN pip3 install jupyterlab \ 
+RUN python3 -m venv /home/user/.venv
+ENV PATH="/home/user/.venv/bin:$PATH"
+RUN pip install --upgrade pip \
+ && pip install --index-url https://download.pytorch.org/whl/cu126 \
+        --extra-index-url https://pypi.org/simple \
+        torch torchvision
+
+RUN pip install jupyterlab \ 
                  bitsandbytes \
                  datasets \
                  loralib \
